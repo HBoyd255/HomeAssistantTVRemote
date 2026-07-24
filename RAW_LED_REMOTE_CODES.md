@@ -339,3 +339,15 @@ uint32_t address = 0x0;
 uint32_t command = 0xC;
 uint64_t data = 0xFF30CF;
 ```
+
+## REPEAT
+
+```
+Timestamp : 000009.689
+Library   : v2.9.0
+
+Protocol  : NEC (Repeat)
+Code      : 0xFFFFFFFFFFFFFFFF (0 Bits)
+uint16_t rawData[3] = {9070, 2218,  610};  // NEC (Repeat) FFFFFFFFFFFFFFFF
+uint64_t data = 0xFFFFFFFFFFFFFFFF;
+```
