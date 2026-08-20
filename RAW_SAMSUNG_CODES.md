@@ -1,6 +1,12 @@
-## POWERTimestamp
+# Raw Samsung Remote Codes
 
-```: 000224.391
+The codes from a small credit card shaped LED remote, captured on
+IRrecvDumpV2.ino
+
+## POWER
+
+```
+Timestamp: 000224.391
 Library   : v2.9.0
 
 Protocol  : SAMSUNG
@@ -13,7 +19,7 @@ uint64_t data = 0xE0E040BF;
 
 ## SOURCE
 
-````
+```
 Timestamp : 000226.027
 Library   : v2.9.0
 
@@ -23,10 +29,12 @@ uint16_t rawData[135] = {4568, 4470,  610, 1656,  610, 1654,  610, 1654,  610, 5
 uint32_t address = 0x7;
 uint32_t command = 0x1;
 uint64_t data = 0xE0E0807F;
+```
 
-## ```ONE
-Timestamp
-``` : 000226.995
+## ONE
+
+```
+Timestamp : 000226.995
 Library   : v2.9.0
 
 Protocol  : SAMSUNG
@@ -35,10 +43,12 @@ uint16_t rawData[135] = {4592, 4470,  608, 1654,  608, 1656,  610, 1654,  608, 5
 uint32_t address = 0x7;
 uint32_t command = 0x4;
 uint64_t data = 0xE0E020DF;
+```
 
-## ```TWO
-Timestamp
-``` : 000227.903
+## TWO
+
+```
+Timestamp: 000227.903
 Library   : v2.9.0
 
 Protocol  : SAMSUNG
@@ -47,7 +57,7 @@ uint16_t rawData[135] = {4594, 4472,  610, 1656,  610, 1656,  610, 1656,  610, 5
 uint32_t address = 0x7;
 uint32_t command = 0x5;
 uint64_t data = 0xE0E0A05F;
-````
+```
 
 ## THREE
 
@@ -79,7 +89,7 @@ uint64_t data = 0xE0E010EF;
 
 ## FIVE
 
-````
+```
 Timestamp : 000230.614
 Library   : v2.9.0
 
@@ -90,9 +100,12 @@ uint32_t address = 0x7;
 uint32_t command = 0x9;
 uint64_t data = 0xE0E0906F;
 
-## ```SIX
-Timestamp
-``` : 000231.836
+```
+
+## SIX
+
+```
+Timestamp: 000231.836
 Library   : v2.9.0
 
 Protocol  : SAMSUNG
@@ -101,7 +114,7 @@ uint16_t rawData[135] = {4594, 4470,  610, 1654,  610, 1654,  610, 1656,  610, 5
 uint32_t address = 0x7;
 uint32_t command = 0xA;
 uint64_t data = 0xE0E050AF;
-````
+```
 
 ## SEVEN
 
@@ -133,7 +146,7 @@ uint64_t data = 0xE0E0B04F;
 
 ## NINE
 
-````
+```
 Timestamp : 000235.318
 Library   : v2.9.0
 
@@ -144,9 +157,12 @@ uint32_t address = 0x7;
 uint32_t command = 0xE;
 uint64_t data = 0xE0E0708F;
 
-## ```TTX
-Timestamp
-``` : 000236.211
+```
+
+## TTX
+
+```
+Timestamp : 000236.211
 Library   : v2.9.0
 
 Protocol  : SAMSUNG
@@ -155,7 +171,7 @@ uint16_t rawData[135] = {4590, 4466,  608, 1654,  608, 1654,  610, 1654,  608, 5
 uint32_t address = 0x7;
 uint32_t command = 0x2C;
 uint64_t data = 0xE0E034CB;
-````
+```
 
 ## ZERO
 
@@ -313,7 +329,7 @@ uint64_t data = 0xE0E0F20D;
 
 ## TOOLS
 
-````
+```
 Timestamp : 000322.671
 Library   : v2.9.0
 
@@ -323,10 +339,12 @@ uint16_t rawData[135] = {4586, 4466,  608, 1654,  608, 1654,  608, 1654,  608, 5
 uint32_t address = 0x7;
 uint32_t command = 0x4B;
 uint64_t data = 0xE0E0D22D;
+```
 
-## ```UP
-Timestamp
-``` : 000323.440
+## UP
+
+```
+Timestamp : 000323.440
 Library   : v2.9.0
 
 Protocol  : SAMSUNG
@@ -335,7 +353,7 @@ uint16_t rawData[67] = {4592, 4470,  608, 1656,  608, 1654,  610, 1654,  608, 52
 uint32_t address = 0x7;
 uint32_t command = 0x60;
 uint64_t data = 0xE0E006F9;
-````
+```
 
 ## INFO
 
@@ -423,7 +441,7 @@ uint64_t data = 0xE0E08679;
 
 ## EXIT
 
-````
+```
 Timestamp : 000331.821
 Library   : v2.9.0
 
@@ -433,10 +451,12 @@ uint16_t rawData[135] = {4566, 4470,  608, 1656,  608, 1656,  608, 1654,  608, 5
 uint32_t address = 0x7;
 uint32_t command = 0x2D;
 uint64_t data = 0xE0E0B44B;
+```
 
-## ```RED
-Timestamp
-``` : 000333.766
+## RED
+
+```
+Timestamp : 000333.766
 Library   : v2.9.0
 
 Protocol  : SAMSUNG
@@ -445,7 +465,7 @@ uint16_t rawData[67] = {4594, 4468,  610, 1652,  608, 1654,  608, 1654,  608, 52
 uint32_t address = 0x7;
 uint32_t command = 0x6C;
 uint64_t data = 0xE0E036C9;
-````
+```
 
 ## GREEN
 
