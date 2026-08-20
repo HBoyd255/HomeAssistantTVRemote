@@ -3,7 +3,7 @@
 The codes from a small credit card shaped LED remote, captured on
 IRrecvDumpV2.ino
 
-## Brightness UP
+## BRIGHTNESS_UP
 
 ```
 Timestamp : 001214.852
@@ -17,7 +17,7 @@ uint32_t command = 0x9;
 uint64_t data = 0xFF906F;
 ```
 
-## Brightness Down
+## BRIGHTNESS_DOWN
 
 ```
 Timestamp : 001331.285
@@ -60,7 +60,7 @@ uint32_t command = 0xD;
 uint64_t data = 0xFFB04F;
 ```
 
-## Red
+## RED
 
 ```
 Timestamp : 001651.102
@@ -75,7 +75,7 @@ uint64_t data = 0xFF9867;
 
 ```
 
-## Green
+## GREEN
 
 ```
 Timestamp : 001652.299
@@ -89,7 +89,7 @@ uint32_t command = 0x1B;
 uint64_t data = 0xFFD827;
 ```
 
-## Blue
+## BLUE
 
 ```
 Timestamp : 001673.400
@@ -103,7 +103,7 @@ uint32_t command = 0x11;
 uint64_t data = 0xFF8877;
 ```
 
-## White
+## WHITE
 
 ```
 Timestamp : 001674.414
@@ -174,7 +174,7 @@ uint64_t data = 0xFFB24D;
 
 ```
 
-## Dark_Orange
+## DARK_ORANGE
 
 ```
 Timestamp : 002054.531
