@@ -1,7 +1,6 @@
 # Raw Samsung Remote Codes
 
-The codes from a small credit card shaped LED remote, captured on
-IRrecvDumpV2.ino
+The codes from a Samsung TV remote, captured on IRrecvDumpV2.ino
 
 ## POWER
 
