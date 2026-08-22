@@ -4,11 +4,7 @@
 #include <IRsend.h>
 #include <MQTT.h>
 
-#include "IR_CODE_STRUCT.h"
-#include "LED_CODES.h"
-#include "SAMSUNG_CODES.h"
-#include "TIVO_CODES.h"
-#include "TOSHIBA_CODES.h"
+#include "IR_CODES.h"
 #include "wifiCredentials.h"
 
 const uint16_t ir_out_pin = 4;
@@ -27,8 +23,8 @@ MQTTClient mqtt_client;
 volatile int16_t mqtt_in_index = -1;
 volatile int16_t ir_in_index = -1;
 
-#define TOPIC_IR_IN "/hb_mqtt/ir_bridge/livingroom/ir_in"
-#define TOPIC_IR_OUT "/hb_mqtt/ir_bridge/livingroom/ir_out"
+#define TOPIC_IR_IN F("/hb_mqtt/ir_bridge/bedroom/ir_in")
+#define TOPIC_IR_OUT F("/hb_mqtt/ir_bridge/bedroom/ir_out")
 
 const int IR_CODE_COUNT = 151;
 ir_code_item led_ir_items[IR_CODE_COUNT] = {
@@ -186,37 +182,37 @@ ir_code_item led_ir_items[IR_CODE_COUNT] = {
 };
 
 void mqtt_data_in(String& topic, String& payload) {
-    Serial.println("incoming: " + topic + " - " + payload);
+    Serial.println(F("incoming: ") + topic + F(" - ") + payload);
 
     if (topic != TOPIC_IR_OUT) {
-        Serial.println("Error");
+        Serial.println(F("Error"));
     }
 
     for (int i = 0; i < IR_CODE_COUNT; i++) {
-        // if (payload == led_ir_items[i].name) {
-        //     mqtt_in_index = i;
-        //     return;
-        // }
+        if (payload == led_ir_items[i].name) {
+            mqtt_in_index = i;
+            return;
+        }
     }
 
-    Serial.println("Command Not Found.");
+    Serial.println(F("Command Not Found."));
     mqtt_in_index = -1;
 }
 
 void connect_to_mqtt() {
-    Serial.print("checking wifi...");
+    Serial.print(F("checking wifi..."));
     while (WiFi.status() != WL_CONNECTED) {
         Serial.print(".");
         delay(1000);
     }
 
-    Serial.print("\nconnecting...");
-    while (!mqtt_client.connect("arduino", MQTT_USERNAME, MQTT_PASSWORD)) {
+    Serial.print(F("\nconnecting..."));
+    while (!mqtt_client.connect("IR_BEDROOM", MQTT_USERNAME, MQTT_PASSWORD)) {
         Serial.print("-");
         delay(1000);
     }
 
-    Serial.println("\nconnected!");
+    Serial.println(F("\nconnected!"));
 
     mqtt_client.subscribe(TOPIC_IR_OUT);
 }
@@ -237,20 +233,75 @@ void setup() {
 
     delay(3000);
 
-    Serial.println("CODES:");
+    Serial.println(F("CODES:"));
     for (int i = 0; i < IR_CODE_COUNT; i++) {
-        // Serial.println(led_ir_items[i].decoded);
+        // TODO check for duplicates
+        Serial.println(led_ir_items[i].decoded);
     }
 
-    Serial.println("END:");
+    Serial.println(F("END:"));
 }
 
 void got_ir(const uint64_t received_code) {
+    static String last_command_name = "";
+
     for (int i = 0; i < IR_CODE_COUNT; i++) {
-        // if (received_code == led_ir_items[i].decoded) {
-        //     Serial.println(led_ir_items[i].name);
-        //     return;
-        // }
+        if (received_code == led_ir_items[i].decoded) {
+            String command_name;
+            if (led_ir_items[i].name == LED_REPEAT_NAME) {
+                command_name = last_command_name;
+            } else {
+                command_name = led_ir_items[i].name;
+            }
+
+            Serial.println(command_name);
+            mqtt_client.publish(TOPIC_IR_IN, command_name);
+
+            last_command_name = command_name;
+            return;
+        }
+    }
+}
+
+void convert_string_to_uint16_array(const String string_value,
+                                    const uint16_t length, uint16_t* data_raw) {
+    char char_array[] = "0000";
+
+    for (int i = 0; i < length; i++) {
+        char_array[0] = string_value[(i * 4) + 0];
+        char_array[1] = string_value[(i * 4) + 1];
+        char_array[2] = string_value[(i * 4) + 2];
+        char_array[3] = string_value[(i * 4) + 3];
+
+        // TODO add checks for if any values are over 15
+        char HEX_0 = (char_array[0] - 'A');
+        char HEX_1 = (char_array[1] - 'A');
+        char HEX_2 = (char_array[2] - 'A');
+        char HEX_3 = (char_array[3] - 'A');
+
+        uint8_t msB = (HEX_0 << 4) + HEX_1;
+        uint8_t lsB = (HEX_2 << 4) + HEX_3;
+
+        uint16_t value = (msB << 8) + lsB;
+
+        //         Serial.println(char_array);
+        //
+        //         Serial.print((int)HEX_0);
+        //         Serial.print(" ");
+        //         Serial.print((int)HEX_1);
+        //         Serial.print(" ");
+        //         Serial.print((int)HEX_2);
+        //         Serial.print(" ");
+        //         Serial.println((int)HEX_3);
+        //         Serial.println();
+        //
+        //
+        //         Serial.print("MSB: ");
+        //         Serial.print(msB);
+        //         Serial.print(" LSB: ");
+        //         Serial.println(lsB);
+
+        data_raw[i] = value;
     }
 }
 
@@ -260,29 +311,42 @@ void loop() {
     delay(10);  // <- fixes some issues with WiFi stability
 
     if (!mqtt_client.connected()) {
-        Serial.println("Reconnecting To MQTT Broker");
+        Serial.println(F("Reconnecting To MQTT Broker"));
         connect_to_mqtt();
     }
 
     if (mqtt_in_index != -1) {
-        Serial.print("MQTT Requested: ");
-        // Serial.println(led_ir_items[mqtt_in_index].name);
-        // ir_send.sendRaw(led_ir_items[mqtt_in_index].raw_data,
-        //                 led_ir_items[mqtt_in_index].length, CARRIER_WAVE);
+        Serial.print(F("MQTT Request: "));
+        Serial.println(led_ir_items[mqtt_in_index].name);
+
+        const String data_string =
+            retrieve_led_string_from_flash(led_ir_items[mqtt_in_index].name);
+
+        Serial.println(data_string);
+        uint16_t data_raw[led_ir_items[mqtt_in_index].length];
+
+        convert_string_to_uint16_array(
+            data_string, led_ir_items[mqtt_in_index].length, data_raw);
+
+        for (int i = 0; i < led_ir_items[mqtt_in_index].length; i++) {
+            Serial.println(data_raw[i]);
+        }
+
+        ir_send.sendRaw(data_raw, led_ir_items[mqtt_in_index].length,
+                        CARRIER_WAVE);
 
         mqtt_in_index = -1;
     }
     if (ir_in_index != -1) {
-        Serial.print("IR Requested: ");
+        Serial.print(F("IR Request: "));
         //         Serial.println(COMMAND_NAME[ir_in_index]);
         //
-        //         mqtt_client.publish(TOPIC_last_ir_in)
 
         ir_in_index = -1;
     }
 
     if (ir_rec.decode(&results)) {
-        Serial.println("<===========+--o");
+        Serial.println(F("<===========+--o"));
         got_ir(results.value);
 
         ir_rec.resume();
