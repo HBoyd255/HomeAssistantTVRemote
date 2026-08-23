@@ -7,12 +7,12 @@
 #include "IR_CODES.h"
 #include "wifiCredentials.h"
 
-const uint16_t ir_out_pin = 4;
-const int CARRIER_WAVE = 38;
+#define CARRIER_WAVE 38
+
+#define ir_out_pin 4
+#define kRecvPin 14
 
 IRsend ir_send(ir_out_pin);
-
-const uint16_t kRecvPin = 14;
 
 IRrecv ir_rec(kRecvPin);
 decode_results results;
@@ -21,7 +21,6 @@ WiFiClient wifi_client;
 MQTTClient mqtt_client;
 
 volatile int16_t mqtt_in_index = -1;
-volatile int16_t ir_in_index = -1;
 
 #define TOPIC_IR_IN F("/hb_mqtt/ir_bridge/bedroom/ir_in")
 #define TOPIC_IR_OUT F("/hb_mqtt/ir_bridge/bedroom/ir_out")
@@ -242,27 +241,6 @@ void setup() {
     Serial.println(F("END:"));
 }
 
-void got_ir(const uint64_t received_code) {
-    static String last_command_name = "";
-
-    for (int i = 0; i < IR_CODE_COUNT; i++) {
-        if (received_code == led_ir_items[i].decoded) {
-            String command_name;
-            if (led_ir_items[i].name == LED_REPEAT_NAME) {
-                command_name = last_command_name;
-            } else {
-                command_name = led_ir_items[i].name;
-            }
-
-            Serial.println(command_name);
-            mqtt_client.publish(TOPIC_IR_IN, command_name);
-
-            last_command_name = command_name;
-            return;
-        }
-    }
-}
-
 void convert_string_to_uint16_array(const String string_value,
                                     const uint16_t length, uint16_t* data_raw) {
     char char_array[] = "0000";
@@ -284,25 +262,50 @@ void convert_string_to_uint16_array(const String string_value,
 
         uint16_t value = (msB << 8) + lsB;
 
-        //         Serial.println(char_array);
-        //
-        //         Serial.print((int)HEX_0);
-        //         Serial.print(" ");
-        //         Serial.print((int)HEX_1);
-        //         Serial.print(" ");
-        //         Serial.print((int)HEX_2);
-        //         Serial.print(" ");
-        //         Serial.println((int)HEX_3);
-        //         Serial.println();
-        //
-        //
-        //         Serial.print("MSB: ");
-        //         Serial.print(msB);
-        //         Serial.print(" LSB: ");
-        //         Serial.println(lsB);
-
         data_raw[i] = value;
     }
+}
+
+void got_ir(const uint64_t received_code) {
+    static String last_command_name = "";
+
+    for (int i = 0; i < IR_CODE_COUNT; i++) {
+        if (received_code == led_ir_items[i].decoded) {
+            String command_name;
+            if (led_ir_items[i].name == LED_REPEAT_NAME) {
+                command_name = last_command_name;
+            } else {
+                command_name = led_ir_items[i].name;
+            }
+
+            Serial.println(command_name);
+            mqtt_client.publish(TOPIC_IR_IN, command_name);
+
+            last_command_name = command_name;
+            return;
+        }
+    }
+}
+
+void got_mqtt(const int16_t requested_mqtt_in_index) {
+    Serial.print(F("MQTT Request: "));
+    Serial.println(led_ir_items[requested_mqtt_in_index].name);
+
+    const String data_string = retrieve_led_string_from_flash(
+        led_ir_items[requested_mqtt_in_index].name);
+
+    Serial.println(data_string);
+    uint16_t data_raw[led_ir_items[requested_mqtt_in_index].length];
+
+    convert_string_to_uint16_array(
+        data_string, led_ir_items[requested_mqtt_in_index].length, data_raw);
+
+    for (int i = 0; i < led_ir_items[requested_mqtt_in_index].length; i++) {
+        Serial.println(data_raw[i]);
+    }
+
+    ir_send.sendRaw(data_raw, led_ir_items[requested_mqtt_in_index].length,
+                    CARRIER_WAVE);
 }
 
 void loop() {
@@ -316,33 +319,8 @@ void loop() {
     }
 
     if (mqtt_in_index != -1) {
-        Serial.print(F("MQTT Request: "));
-        Serial.println(led_ir_items[mqtt_in_index].name);
-
-        const String data_string =
-            retrieve_led_string_from_flash(led_ir_items[mqtt_in_index].name);
-
-        Serial.println(data_string);
-        uint16_t data_raw[led_ir_items[mqtt_in_index].length];
-
-        convert_string_to_uint16_array(
-            data_string, led_ir_items[mqtt_in_index].length, data_raw);
-
-        for (int i = 0; i < led_ir_items[mqtt_in_index].length; i++) {
-            Serial.println(data_raw[i]);
-        }
-
-        ir_send.sendRaw(data_raw, led_ir_items[mqtt_in_index].length,
-                        CARRIER_WAVE);
-
+        got_mqtt(mqtt_in_index);
         mqtt_in_index = -1;
-    }
-    if (ir_in_index != -1) {
-        Serial.print(F("IR Request: "));
-        //         Serial.println(COMMAND_NAME[ir_in_index]);
-        //
-
-        ir_in_index = -1;
     }
 
     if (ir_rec.decode(&results)) {
@@ -351,11 +329,4 @@ void loop() {
 
         ir_rec.resume();
     }
-
-    // static unsigned long last_ran = 0;
-    // if (millis() - last_ran > 1000) {
-    //     Serial.print("Still Alive: ");
-    //     Serial.println(millis());
-    //     last_ran = millis();
-    // }
 }
