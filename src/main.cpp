@@ -28,7 +28,7 @@ volatile int16_t ir_in_index = -1;
 
 const int IR_CODE_COUNT = 151;
 ir_code_item led_ir_items[IR_CODE_COUNT] = {
-    LED_BRIGHTNESS_STRUCT,
+    LED_BRIGHTNESS_UP_STRUCT,
     LED_BRIGHTNESS_DOWN_STRUCT,
     LED_OFF_STRUCT,
     LED_ON_STRUCT,
