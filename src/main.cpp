@@ -24,6 +24,7 @@ volatile int16_t mqtt_in_index = -1;
 
 #define TOPIC_IR_IN F("/hb_mqtt/ir_bridge/bedroom/ir_in")
 #define TOPIC_IR_OUT F("/hb_mqtt/ir_bridge/bedroom/ir_out")
+#define ESP_HOSTNAME F("ir-bridge-bedroom")
 
 const int IR_CODE_COUNT = 151;
 ir_code_item led_ir_items[IR_CODE_COUNT] = {
@@ -223,6 +224,7 @@ void setup() {
 
     Serial.begin(115200);
 
+    WiFi.hostname(ESP_HOSTNAME);
     WiFi.begin(WIFI_NAME, WIFI_PASSWORD);
 
     mqtt_client.begin(MQTT_HOSTNAME, wifi_client);
