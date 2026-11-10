@@ -22,9 +22,25 @@ MQTTClient mqtt_client;
 
 volatile int16_t mqtt_in_index = -1;
 
+#define IS_BEDROOM false
+
+#if IS_BEDROOM
+
 #define TOPIC_IR_IN F("/hb_mqtt/ir_bridge/bedroom/ir_in")
 #define TOPIC_IR_OUT F("/hb_mqtt/ir_bridge/bedroom/ir_out")
-#define ESP_HOSTNAME F("ir-bridge-bedroom")
+#define ESP_HOSTNAME F("hb-mqtt-ir-bridge-bedroom")
+#define CLIENT_ID "IR_BEDROOM"
+
+#else
+
+#define TOPIC_IR_IN F("/hb_mqtt/ir_bridge/livingroom/ir_in")
+#define TOPIC_IR_OUT F("/hb_mqtt/ir_bridge/livingroom/ir_out")
+#define ESP_HOSTNAME F("hb-mqtt-ir-bridge-livingroom")
+#define CLIENT_ID "IR_LIVINGROOM"
+
+#endif
+
+#define DEBUG_MODE false
 
 const int IR_CODE_COUNT = 151;
 ir_code_item led_ir_items[IR_CODE_COUNT] = {
@@ -184,6 +200,9 @@ ir_code_item led_ir_items[IR_CODE_COUNT] = {
 void mqtt_data_in(String& topic, String& payload) {
     Serial.println(F("incoming: ") + topic + F(" - ") + payload);
 
+    payload.toUpperCase();
+
+    Serial.println(F("converted to upper case: ") + topic + F(" - ") + payload);
     if (topic != TOPIC_IR_OUT) {
         Serial.println(F("Error"));
     }
@@ -207,7 +226,7 @@ void connect_to_mqtt() {
     }
 
     Serial.print(F("\nconnecting..."));
-    while (!mqtt_client.connect("IR_BEDROOM", MQTT_USERNAME, MQTT_PASSWORD)) {
+    while (!mqtt_client.connect(CLIENT_ID, MQTT_USERNAME, MQTT_PASSWORD)) {
         Serial.print("-");
         delay(1000);
     }
@@ -232,6 +251,8 @@ void setup() {
 
     connect_to_mqtt();
 
+#if DEBUG_MODE
+
     delay(3000);
 
     Serial.println(F("CODES:"));
@@ -241,6 +262,7 @@ void setup() {
     }
 
     Serial.println(F("END:"));
+#endif
 }
 
 void convert_string_to_uint16_array(const String string_value,
@@ -292,19 +314,24 @@ void got_ir(const uint64_t received_code) {
 void got_mqtt(const int16_t requested_mqtt_in_index) {
     Serial.print(F("MQTT Request: "));
     Serial.println(led_ir_items[requested_mqtt_in_index].name);
+    Serial.println(F("Sending as IR"));
 
     const String data_string = retrieve_led_string_from_flash(
         led_ir_items[requested_mqtt_in_index].name);
 
+#if DEBUG_MODE
     Serial.println(data_string);
+#endif
     uint16_t data_raw[led_ir_items[requested_mqtt_in_index].length];
 
     convert_string_to_uint16_array(
         data_string, led_ir_items[requested_mqtt_in_index].length, data_raw);
 
+#if DEBUG_MODE
     for (int i = 0; i < led_ir_items[requested_mqtt_in_index].length; i++) {
         Serial.println(data_raw[i]);
     }
+#endif
 
     ir_send.sendRaw(data_raw, led_ir_items[requested_mqtt_in_index].length,
                     CARRIER_WAVE);
@@ -327,6 +354,7 @@ void loop() {
 
     if (ir_rec.decode(&results)) {
         Serial.println(F("<===========+--o"));
+        Serial.println(F("Got IR in:"));
         got_ir(results.value);
 
         ir_rec.resume();
